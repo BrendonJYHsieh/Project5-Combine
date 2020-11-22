@@ -957,15 +957,99 @@ void TrainView::drawStuff(bool doingShadows)
 		}
 	}
 	// draw the track
+	drawTrack(this, doingShadows);
 	//####################################################################
 	// TODO: 
 	// call your own track drawing code
 	//####################################################################
+	if (!tw->trainCam->value())
+		drawTrain(this, doingShadows);
+}
+void TrainView::drawTrack(TrainView* TrainV, bool doingShadows) {
+	Path_Total = 0;
+	float Sleep_Total = 0.0f;
+	float percent = 1.0f / DIVIDE_LINE;
+	Pnt3f lastqt;
+	bool Draw_Sleeper = false;
+	bool check = false;
+	int count = 0;
+	//glutSolidSphere(0.7f, 15, 15);
+	for (size_t i = 0; i < m_pTrack->points.size(); i++) {
+		float t = 0;
+		ControlPoint p1 = m_pTrack->points[(i - 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+		ControlPoint p2 = m_pTrack->points[(i + m_pTrack->points.size()) % m_pTrack->points.size()];
+		ControlPoint p3 = m_pTrack->points[(i + 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+		ControlPoint p4 = m_pTrack->points[(i + 2 + m_pTrack->points.size()) % m_pTrack->points.size()];
+		for (size_t j = 0; j < DIVIDE_LINE; j++) {
+			Pnt3f qt0 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), t);
+			Pnt3f orient_t = GMT(p1.orient, p2.orient, p3.orient, p4.orient, TrainV->tw->splineBrowser->value(), t);
+			Pnt3f qt1 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), t += percent);
+			Pnt3f forward = qt1 - qt0;
+			Pnt3f cross_t = forward * orient_t;
+			cross_t.normalize();
+			orient_t = cross_t * forward;
+			orient_t.normalize();
+			cross_t = cross_t * Sleeper_Width;
+			/*¤õ¨®²¾°Ê*/
+			Path_Total += sqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
+			if (!check && Path_Total > TrainV->m_pTrack->trainU) {
+				if (qt1.y - qt0.y > 0) {
+					physical = qt0.y - qt1.y;
+				}
+				else if (qt1.y - qt0.y < 0) {
+					physical = qt0.y - qt1.y;
+					physical *= 0.7;
+				}
+				else {
+					physical = 0;
+				}
+				t_t = t;
+				t_i = i;
+				check = true;
+			}
 
-#ifdef EXAMPLE_SOLUTION
-	drawTrack(this, doingShadows);
-#endif
-
+			/*ÅK­y*/
+			if (!doingShadows) {
+				glColor3ub(77, 19, 0);
+			}
+			glNormal3f(orient_t.x, orient_t.y, orient_t.z);
+			glLineWidth(5);
+			glBegin(GL_LINES);
+			glVertex3f_Simplify(qt0 + cross_t);
+			glVertex3f_Simplify(qt1 + cross_t);
+			glVertex3f_Simplify(qt0 - cross_t);
+			glVertex3f_Simplify(qt1 - cross_t);
+			glEnd();
+			//¸ÉµeÅK­yÂ_µõ³B
+			if (j != 0) {
+				glNormal3f(orient_t.x, orient_t.y, orient_t.z);
+				glLineWidth(5);
+				glBegin(GL_LINES);
+				glVertex3f_Simplify(lastqt + cross_t);
+				glVertex3f_Simplify(qt1 + cross_t);
+				glVertex3f_Simplify(lastqt - cross_t);
+				glVertex3f_Simplify(qt1 - cross_t);
+				glEnd();
+			}
+			Sleep_Total += sqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
+			if (!Draw_Sleeper && Sleep_Total >= Sleeper_Length) {
+				count++;
+				forward.normalize();
+				DrawSleeper(qt0, qt0 - forward * Sleeper_Length, cross_t, orient_t, doingShadows);
+				if (count % 3 == 0) {
+					DrawPillar(qt0, qt0 - forward * Sleeper_Length, cross_t, orient_t, doingShadows);
+					count = 0;
+				}
+				Sleep_Total -= Sleeper_Length;
+				Draw_Sleeper = !Draw_Sleeper;
+			}
+			else if (Draw_Sleeper && Sleep_Total >= Sleeper_Interval) {
+				Sleep_Total -= Sleeper_Interval;
+				Draw_Sleeper = !Draw_Sleeper;
+			}
+			lastqt = qt0;
+		}
+	}
 	// draw the train
 	//####################################################################
 	// TODO: 
@@ -976,6 +1060,106 @@ void TrainView::drawStuff(bool doingShadows)
 	if (!tw->trainCam->value())
 		drawTrain(this, doingShadows);
 #endif
+}
+void TrainView::drawTrain(TrainView* TrainV, bool doingShadows) {
+
+	float percent = 1.0f / DIVIDE_LINE;
+	float t;
+	int i;
+	if (TrainV->tw->arcLength->value()) {
+		t = t_t;
+		i = t_i;
+	}
+	else {
+		i = floor(t_time);
+		t = t_time - i;
+	}
+
+	for (int j = 1; j <= car_quantity; j++) {
+		if (TrainV->tw->arcLength->value()) {
+			bool check = false;
+			ControlPoint p1 = m_pTrack->points[(i - 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+			ControlPoint p2 = m_pTrack->points[(i + m_pTrack->points.size()) % m_pTrack->points.size()];
+			ControlPoint p3 = m_pTrack->points[(i + 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+			ControlPoint p4 = m_pTrack->points[(i + 2 + m_pTrack->points.size()) % m_pTrack->points.size()];
+
+			Pnt3f qt0 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), t);
+			Pnt3f orient_t = GMT(p1.orient, p2.orient, p3.orient, p4.orient, TrainV->tw->splineBrowser->value(), t);
+			Pnt3f qt1 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), t += percent);
+
+			Pnt3f cross_t = (qt1 - qt0) * orient_t;
+			cross_t.normalize();
+			orient_t = cross_t * (qt1 - qt0);
+			orient_t.normalize();
+			cross_t = cross_t * Train_Width;
+			Pnt3f up = orient_t * Train_Height;
+			Pnt3f forward = (qt1 - qt0);
+			forward.normalize();
+			forward = forward * Train_Forward;
+
+			float total = 0.0f;
+			if (j == 1) {
+				DrawTrainHead(qt0, cross_t, up, forward, doingShadows);
+			}
+			else {
+				DrawTrain(qt0, cross_t, up, forward, doingShadows);
+			}
+
+			while (!check) {
+				for (t; t >= 0; t = t - percent) {
+					qt0 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), t);
+					qt1 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), t + percent);
+					forward = qt1 - qt0;
+					total += sqrt(forward.x * forward.x + forward.y * forward.y + forward.z * forward.z);
+					if (total >= 13) {
+						check = true;
+						break;
+					}
+				}
+				if (check) {
+					break;
+				}
+				t = 1.0f;
+				i -= 1;
+				if (i < 0) {
+					i = m_pTrack->points.size() - 1;
+				}
+				p1 = m_pTrack->points[(i - 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+				p2 = m_pTrack->points[(i + m_pTrack->points.size()) % m_pTrack->points.size()];
+				p3 = m_pTrack->points[(i + 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+				p4 = m_pTrack->points[(i + 2 + m_pTrack->points.size()) % m_pTrack->points.size()];
+			}
+		}
+		else {
+			float tt = t_time - percent * 200 * (j - 1);
+			int ii = floor(tt);
+			tt -= ii;
+			ControlPoint p1 = m_pTrack->points[(ii - 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+			ControlPoint p2 = m_pTrack->points[(ii + m_pTrack->points.size()) % m_pTrack->points.size()];
+			ControlPoint p3 = m_pTrack->points[(ii + 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+			ControlPoint p4 = m_pTrack->points[(ii + 2 + m_pTrack->points.size()) % m_pTrack->points.size()];
+
+			Pnt3f qt0 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), tt);
+			Pnt3f orient_t = GMT(p1.orient, p2.orient, p3.orient, p4.orient, TrainV->tw->splineBrowser->value(), tt);
+			Pnt3f qt1 = GMT(p1.pos, p2.pos, p3.pos, p4.pos, TrainV->tw->splineBrowser->value(), tt += percent);
+
+			Pnt3f cross_t = (qt1 - qt0) * orient_t;
+			cross_t.normalize();
+			orient_t = cross_t * (qt1 - qt0);
+			orient_t.normalize();
+			cross_t = cross_t * Train_Width;
+			Pnt3f up = orient_t * Train_Height;
+			Pnt3f forward = (qt1 - qt0);
+			forward.normalize();
+			forward = forward * Train_Forward;
+			if (j == 1) {
+				DrawTrainHead(qt0, cross_t, up, forward, doingShadows);
+			}
+			else {
+				DrawTrain(qt0, cross_t, up, forward, doingShadows);
+			}
+		}
+	}
 }
 
 // 
