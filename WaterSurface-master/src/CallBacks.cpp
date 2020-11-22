@@ -247,4 +247,24 @@ void rmzCB(Fl_Widget*, TrainWindow* tw)
 {
 	rollz(tw, -1);
 }
-
+void AddCar(Fl_Widget*, TrainWindow* tw)
+//===========================================================================
+{
+	tw->trainView->car_quantity++;
+	tw->damageMe();
+}
+void DeleteCar(Fl_Widget*, TrainWindow* tw)
+//===========================================================================
+{
+	if (tw->trainView->car_quantity > 2)
+		tw->trainView->car_quantity--;
+	tw->damageMe();
+}
+void Tension_Increase(Fl_Widget*, TrainWindow* tw) {
+	tw->trainView->tense += 0.1;
+	tw->damageMe();
+}
+void Tension_Decrease(Fl_Widget*, TrainWindow* tw) {
+	tw->trainView->tense -= 0.1;
+	tw->damageMe();
+}
