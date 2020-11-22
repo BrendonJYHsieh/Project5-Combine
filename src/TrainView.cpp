@@ -193,9 +193,9 @@ void TrainView::draw()
 		if (!this->shader)
 			this->shader = new
 			Shader(
-				"../Project4-WaterSurface/src/shaders/simple.vert", 
+				"../WaterSurface/src/shaders/simple.vert", 
 				nullptr, nullptr, nullptr, 
-				"../Project4-WaterSurface/src/shaders/simple.frag");
+				"../WaterSurface/src/shaders/simple.frag");
 
 		if (!this->commom_matrices)
 			this->commom_matrices = new UBO();
