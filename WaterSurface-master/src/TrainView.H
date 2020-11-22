@@ -55,7 +55,7 @@ class CTrack;
 #include <AL/alut.h>
 //#include <AL/al.h>
 //#include <AL/alc.h>
-
+#include"TrainWindow.H"
 // this uses the old ArcBall Code
 #include "Utilities/ArcBallCam.H"
 
@@ -80,18 +80,40 @@ class TrainView : public Fl_Gl_Window
 
 		// Reset the Arc ball control
 		void resetArcball();
-
+		
+		//Pnt3f GMT(Pnt3f p1, Pnt3f p2, Pnt3f p3, Pnt3f p4, float mode, float t);
 		// pick a point (for when the mouse goes down)
 		void doPick();
 
 		//set ubo
 		void setUBO();
+
+		Pnt3f GMT(Pnt3f p1, Pnt3f p2, Pnt3f p3, Pnt3f p4, float mode, float t);
 	public:
 		ArcBallCam		arcball;			// keep an ArcBall for the UI
 		int				selectedCube;  // simple - just remember which cube is selected
 
 		TrainWindow*	tw;				// The parent of this display window
 		CTrack*			m_pTrack;		// The track of the entire scene
+
+		float physical = 0.0f;
+		float DIVIDE_LINE = 1000.0f;
+		float t_time = 0.0f;
+
+		float t_i = 0.0f;
+		float t_t = 0.0f;
+		float Path_Total = 0.0f;
+
+		float Sleeper_Length = 3.0f;
+		float Sleeper_Interval = 6.0f;
+		float Sleeper_Width = 3.0f;
+
+		float Train_Forward = 10.0f;
+		float Train_Height = 5.0f;
+		float Train_Width = 2.0f;
+		float tense = 0.5f;
+		int car_quantity = 2;
+		bool s = false;
 
 		Shader* shader		= nullptr;
 		Texture2D* texture	= nullptr;
@@ -105,6 +127,7 @@ class TrainView : public Fl_Gl_Window
 		ALCcontext* context = nullptr;
 		ALuint source;
 		ALuint buffer;
+
 
 
 };

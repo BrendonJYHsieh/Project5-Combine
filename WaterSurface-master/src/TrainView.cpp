@@ -41,11 +41,438 @@
 
 
 
-#ifdef EXAMPLE_SOLUTION
-#	include "TrainExample/TrainExample.H"
-#endif
+//My function
+Pnt3f TrainView::GMT(Pnt3f p1, Pnt3f p2, Pnt3f p3, Pnt3f p4, float mode, float t) {
+	glm::mat4x4 G = {
+		{p1.x,p2.x,p3.x,p4.x},
+		{p1.y,p2.y,p3.y,p4.y},
+		{p1.z,p2.z,p3.z,p4.z},
+		{1,1,1,1}
+	};
+	G = glm::transpose(G);
+	glm::mat4x4 M;
+	if (mode == 1) {
+		M = { 0, 0, 0, 0,
+			0, 0, -1, 1,
+			0, 0, 1, 0,
+			0, 0, 0, 0 };
+	}
+	else if (mode == 2) {
+		M = {
+				{-1.0f,2.0f,-1.0f,0.0f},
+				{2.0f / tense - 1.0f,1.0f - 3.0f / tense,0.0f,1.0f / tense},
+				{1.0f - 2.0f / tense,3.0f / tense - 2.0f,1.0f,0.0f},
+				{1.0f,-1.0f,0.0f,0.0f}
+		};
+		M *= tense;
+	}
+	else if (mode == 3) {
+		M = {
+			{-1.0f,3.0f,-3.0f,1.0f},
+			{3.0f,-6.0f,0.0f,4.0f},
+			{-3.0f,3.0f,3.0f,1.0f},
+			{1.0f,0.0f,0.0f,0.0f}
+		};
+		M /= 6.0f;
+	}
+	M = glm::transpose(M);
+	glm::vec4 T = { pow(t,3),pow(t,2),pow(t,1),pow(t,0) };
+	glm::vec4 result = G * M * T;
+	return Pnt3f(result[0], result[1], result[2]);
+}
+void glVertex3f_Simplify(Pnt3f q0) {
+	glVertex3f(q0.x, q0.y, q0.z);
+}
+void initDirLight() {
+	float noAmbient[] = { 0.0f,0.0f,0.0f,1.0f };
+	float whiteDiffuse[] = { 1.0,1.0f ,0.0f ,1.0f };
+	float position[] = { 50.0f,10.0f ,50.0f ,0.0f };
+
+	glLightfv(GL_LIGHT0, GL_AMBIENT, noAmbient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteDiffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, position);
+}
+void initPosLight() {
+	float yellowAmbientDiffuse[] = { 1.0f,1.0f ,1.0f ,1.0f };
+	float whiteDiffuse[] = { 0.0,0.0f ,1.0f ,1.0f };
+	float position[] = { 0.0f,20.0f ,0.0f ,1.0f };
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, yellowAmbientDiffuse);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, whiteDiffuse);
+	glLightfv(GL_LIGHT1, GL_POSITION, position);
+}
+void DrawSleeper(Pnt3f qt0, Pnt3f qt1, Pnt3f cross_t, Pnt3f orient_t, bool doingShadows) {
+	//礶臟瓂絬
+	if (!doingShadows) {
+		glColor3ub(0, 0, 0);
+	}
+	glLineWidth(2);
+	glBegin(GL_LINES);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt1 + cross_t);
+	glVertex3f_Simplify(qt1 - cross_t);
+
+	glVertex3f_Simplify(qt0 + cross_t - orient_t);
+	glVertex3f_Simplify(qt0 - cross_t - orient_t);
+	glVertex3f_Simplify(qt1 + cross_t - orient_t);
+	glVertex3f_Simplify(qt1 - cross_t - orient_t);
+
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t - orient_t);
+	glVertex3f_Simplify(qt1 + cross_t);
+	glVertex3f_Simplify(qt1 + cross_t - orient_t);
+
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t - orient_t);
+	glVertex3f_Simplify(qt1 - cross_t);
+	glVertex3f_Simplify(qt1 - cross_t - orient_t);
 
 
+	glVertex3f_Simplify(qt0 - cross_t - orient_t);
+	glVertex3f_Simplify(qt1 - cross_t - orient_t);
+
+
+	glVertex3f_Simplify(qt0 + cross_t - orient_t);
+	glVertex3f_Simplify(qt1 + cross_t - orient_t);
+	glEnd();
+
+	//礶臟瓂
+	if (!doingShadows) {
+		glColor3ub(101, 50, 0);
+	}
+	glNormal3f(orient_t.x, orient_t.y, orient_t.z);
+	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt1 + cross_t);
+	glVertex3f_Simplify(qt1 - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glEnd();
+
+	glNormal3f(-orient_t.x, -orient_t.y, -orient_t.z);
+	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt0 - orient_t + cross_t);
+	glVertex3f_Simplify(qt1 - orient_t + cross_t);
+	glVertex3f_Simplify(qt1 - orient_t - cross_t);
+	glVertex3f_Simplify(qt0 - orient_t - cross_t);
+	glEnd();
+
+	glNormal3f(-(qt1 - qt0).x, -(qt1 - qt0).y, -(qt1 - qt0).z);
+	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt0 - orient_t - cross_t);
+	glVertex3f_Simplify(qt0 - orient_t + cross_t);
+	glEnd();
+
+	glNormal3f((qt1 - qt0).x, (qt1 - qt0).y, (qt1 - qt0).z);
+	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt1 + cross_t);
+	glVertex3f_Simplify(qt1 - cross_t);
+	glVertex3f_Simplify(qt1 - orient_t - cross_t);
+	glVertex3f_Simplify(qt1 - orient_t + cross_t);
+	glEnd();
+
+	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt1 - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt0 - orient_t - cross_t);
+	glVertex3f_Simplify(qt1 - orient_t - cross_t);
+	glEnd();
+
+	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
+	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt1 + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 - orient_t + cross_t);
+	glVertex3f_Simplify(qt1 - orient_t + cross_t);
+	glEnd();
+}
+void DrawPillar(Pnt3f qt0, Pnt3f qt1, Pnt3f cross_t, Pnt3f orient_t, bool doingShadows) {
+	/*琖*/
+	if (!doingShadows) {
+		glColor3ub(64, 17, 140);
+	}
+	//
+	glBegin(GL_QUADS);
+	glVertex3f((qt0 + cross_t).x, 0.1, (qt0 + cross_t).z);
+	glVertex3f((qt1 + cross_t).x, 0.1, (qt1 + cross_t).z);
+	glVertex3f((qt1 - cross_t).x, 0.1, (qt1 - cross_t).z);
+	glVertex3f((qt0 - cross_t).x, 0.1, (qt0 - cross_t).z);
+	glEnd();
+	//
+	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
+	glBegin(GL_QUADS);
+	glVertex3f((qt0 + cross_t).x, (qt0 + cross_t).y, (qt0 + cross_t).z);
+	glVertex3f((qt1 + cross_t).x, (qt1 + cross_t).y, (qt1 + cross_t).z);
+	glVertex3f((qt1 + cross_t).x, 0.1, (qt1 + cross_t).z);
+	glVertex3f((qt0 + cross_t).x, 0.1, (qt0 + cross_t).z);
+	glEnd();
+	//オ
+	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glBegin(GL_QUADS);
+	glVertex3f((qt0 - cross_t).x, (qt0 - cross_t).y, (qt0 - cross_t).z);
+	glVertex3f((qt1 - cross_t).x, (qt1 - cross_t).y, (qt1 - cross_t).z);
+	glVertex3f((qt1 - cross_t).x, 0.1, (qt1 - cross_t).z);
+	glVertex3f((qt0 - cross_t).x, 0.1, (qt0 - cross_t).z);
+	glEnd();
+	//玡
+	glNormal3f((qt1 - qt0).x, (qt1 - qt0).y, (qt1 - qt0).z);
+	glBegin(GL_QUADS);
+	glVertex3f((qt1 - cross_t).x, (qt1 - cross_t).y, (qt1 - cross_t).z);
+	glVertex3f((qt1 + cross_t).x, (qt1 - cross_t).y, (qt1 + cross_t).z);
+	glVertex3f((qt1 + cross_t).x, 0.1, (qt1 + cross_t).z);
+	glVertex3f((qt1 - cross_t).x, 0.1, (qt1 - cross_t).z);
+	glEnd();
+	//
+	glNormal3f(-(qt1 - qt0).x, -(qt1 - qt0).y, -(qt1 - qt0).z);
+	glBegin(GL_QUADS);
+	glVertex3f((qt0 - cross_t).x, (qt0 - cross_t).y, (qt0 - cross_t).z);
+	glVertex3f((qt0 + cross_t).x, (qt0 - cross_t).y, (qt0 + cross_t).z);
+	glVertex3f((qt0 + cross_t).x, 0.1, (qt0 + cross_t).z);
+	glVertex3f((qt0 - cross_t).x, 0.1, (qt0 - cross_t).z);
+	glEnd();
+	/*琖*/
+}
+
+void DrawTrain(Pnt3f qt0, Pnt3f cross_t, Pnt3f up, Pnt3f forward, bool doingShadows) {
+	if (!doingShadows) {
+		glColor3ub(255, 255, 255);
+	}
+	glBegin(GL_QUADS);
+	glNormal3f(up.x, up.y, up.z);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward - cross_t + up);
+	glVertex3f_Simplify(qt0 - cross_t + up);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(-up.x, -up.y, -up.z);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	glVertex3f_Simplify(qt0 + forward - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glEnd();
+	//玡
+	glBegin(GL_QUADS);
+	glNormal3f(forward.x, forward.y, forward.z);
+	glVertex3f_Simplify(qt0 + forward - cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	glVertex3f_Simplify(qt0 + forward - cross_t);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(-forward.x, -forward.y, -forward.z);
+	glVertex3f_Simplify(qt0 - cross_t + up);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glEnd();
+	//オ
+	glBegin(GL_QUADS);
+	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glVertex3f_Simplify(qt0 + forward - cross_t + up);
+	glVertex3f_Simplify(qt0 + forward - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t + up);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glEnd();
+	if (!doingShadows) {
+		glColor3ub(0, 0, 0);
+	}
+	//近
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.1);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.2 + up * 0.2);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.1 + up * 0.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + up * 0.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 - forward * 0.1 + up * 0.2);
+	glEnd();
+	glFlush();
+	//玡近
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.9);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 1);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 1.1 + up * 0.2);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 1 + up * 0.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + up * 0.4 + forward * 0.9);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.8 + up * 0.2);
+	glEnd();
+	glFlush();
+	//玡近
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.1);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.2 + up * 0.2);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.1 + up * 0.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + up * 0.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 - forward * 0.1 + up * 0.2);
+	glEnd();
+	glFlush();
+	//玡近                  
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.9);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 1);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 1.1 + up * 0.2);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 1 + up * 0.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + up * 0.4 + forward * 0.9);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.8 + up * 0.2);
+	glEnd();
+}
+
+void DrawTrainHead(Pnt3f qt0, Pnt3f cross_t, Pnt3f up, Pnt3f forward, bool doingShadows) {
+	if (!doingShadows) {
+		glColor3ub(0, 30, 150);
+	}
+	forward = forward * 1.5;
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(up.x, up.y, up.z);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward - cross_t + up);
+	glVertex3f_Simplify(qt0 - cross_t + up);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(-up.x, -up.y, -up.z);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	glVertex3f_Simplify(qt0 + forward - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glEnd();
+	//玡
+	glBegin(GL_QUADS);
+	glNormal3f(forward.x, forward.y, forward.z);
+	glVertex3f_Simplify(qt0 + forward - cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	glVertex3f_Simplify(qt0 + forward - cross_t);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(-forward.x, -forward.y, -forward.z);
+	glVertex3f_Simplify(qt0 - cross_t + up);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glEnd();
+	//オ
+	glBegin(GL_QUADS);
+	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glVertex3f_Simplify(qt0 + forward - cross_t + up);
+	glVertex3f_Simplify(qt0 + forward - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t + up);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glEnd();
+	/*场だ*/
+	float height = 1.8f;
+	float length = 0.4f;
+	cross_t = cross_t * 1.2;
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(up.x, up.y, up.z);
+	glVertex3f_Simplify(qt0 + cross_t + up * height);
+	glVertex3f_Simplify(qt0 + forward * length + cross_t + up * height);
+	glVertex3f_Simplify(qt0 + forward * length - cross_t + up * height);
+	glVertex3f_Simplify(qt0 - cross_t + up * height);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(-forward.x, -forward.y, -forward.z);
+	glVertex3f_Simplify(qt0 - cross_t + up * height);
+	glVertex3f_Simplify(qt0 + cross_t + up * height);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glEnd();
+	//玡
+	glBegin(GL_QUADS);
+	glNormal3f(forward.x, forward.y, forward.z);
+	glVertex3f_Simplify(qt0 + forward * length - cross_t + up * height);
+	glVertex3f_Simplify(qt0 + forward * length + cross_t + up * height);
+	glVertex3f_Simplify(qt0 + forward * length + cross_t);
+	glVertex3f_Simplify(qt0 + forward * length - cross_t);
+	glEnd();
+	//オ
+	glBegin(GL_QUADS);
+	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glVertex3f_Simplify(qt0 + forward * length - cross_t + up * height);
+	glVertex3f_Simplify(qt0 + forward * length - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t);
+	glVertex3f_Simplify(qt0 - cross_t + up * height);
+	glEnd();
+	//
+	glBegin(GL_QUADS);
+	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glVertex3f_Simplify(qt0 + forward * length + cross_t + up * height);
+	glVertex3f_Simplify(qt0 + forward * length + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t + up * height);
+	glEnd();
+	cross_t = cross_t / 1.2;
+	forward = forward / 1.5;
+	if (!doingShadows) {
+		glColor3ub(0, 0, 0);
+	}
+	//近
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 - cross_t * 1.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.4 + forward * 0.1);
+	glVertex3f_Simplify(qt0 - cross_t * 1.4 + forward * 0.2 + up * 0.2);
+	glVertex3f_Simplify(qt0 - cross_t * 1.4 + forward * 0.1 + up * 0.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.4 + up * 0.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.4 - forward * 0.1 + up * 0.2);
+	glEnd();
+	glFlush();
+	//玡近
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.9);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 1);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 1.1 + up * 0.2);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 1 + up * 0.4);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + up * 0.4 + forward * 0.9);
+	glVertex3f_Simplify(qt0 - cross_t * 1.2 + forward * 0.8 + up * 0.2);
+	glEnd();
+	glFlush();
+	//玡近
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 + cross_t * 1.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.4 + forward * 0.1);
+	glVertex3f_Simplify(qt0 + cross_t * 1.4 + forward * 0.2 + up * 0.2);
+	glVertex3f_Simplify(qt0 + cross_t * 1.4 + forward * 0.1 + up * 0.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.4 + up * 0.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.4 - forward * 0.1 + up * 0.2);
+	glEnd();
+	glFlush();
+	//玡近                  
+	glBegin(GL_POLYGON);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.9);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 1);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 1.1 + up * 0.2);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 1 + up * 0.4);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + up * 0.4 + forward * 0.9);
+	glVertex3f_Simplify(qt0 + cross_t * 1.2 + forward * 0.8 + up * 0.2);
+	glEnd();
+}
 //************************************************************************
 //
 // * Constructor to set up the GL window
