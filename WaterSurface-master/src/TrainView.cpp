@@ -238,55 +238,58 @@ void DrawPillar(Pnt3f qt0, Pnt3f qt1, Pnt3f cross_t, Pnt3f orient_t, bool doingS
 
 void DrawTrain(Pnt3f qt0, Pnt3f cross_t, Pnt3f up, Pnt3f forward, bool doingShadows) {
 	if (!doingShadows) {
-		glColor3ub(255, 255, 255);
+		glColor3ub(100, 0, 0);
 	}
-	glBegin(GL_QUADS);
 	glNormal3f(up.x, up.y, up.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 + cross_t + up);
 	glVertex3f_Simplify(qt0 + forward + cross_t + up);
 	glVertex3f_Simplify(qt0 + forward - cross_t + up);
 	glVertex3f_Simplify(qt0 - cross_t + up);
 	glEnd();
 	//¤U
-	glBegin(GL_QUADS);
 	glNormal3f(-up.x, -up.y, -up.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 + cross_t);
 	glVertex3f_Simplify(qt0 + forward + cross_t);
 	glVertex3f_Simplify(qt0 + forward - cross_t);
 	glVertex3f_Simplify(qt0 - cross_t);
 	glEnd();
 	//«e
-	glBegin(GL_QUADS);
 	glNormal3f(forward.x, forward.y, forward.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 + forward - cross_t + up);
 	glVertex3f_Simplify(qt0 + forward + cross_t + up);
 	glVertex3f_Simplify(qt0 + forward + cross_t);
 	glVertex3f_Simplify(qt0 + forward - cross_t);
 	glEnd();
 	//«á
-	glBegin(GL_QUADS);
 	glNormal3f(-forward.x, -forward.y, -forward.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 - cross_t + up);
 	glVertex3f_Simplify(qt0 + cross_t + up);
 	glVertex3f_Simplify(qt0 + cross_t);
 	glVertex3f_Simplify(qt0 - cross_t);
 	glEnd();
-	//¥ª
+	//¥k
+	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
 	glBegin(GL_QUADS);
+	glVertex3f_Simplify(qt0 + cross_t);
+	glVertex3f_Simplify(qt0 + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t + up);
+	glVertex3f_Simplify(qt0 + forward + cross_t);
+	
+	
+	glEnd();
+	//¥ª
 	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 + forward - cross_t + up);
 	glVertex3f_Simplify(qt0 + forward - cross_t);
 	glVertex3f_Simplify(qt0 - cross_t);
 	glVertex3f_Simplify(qt0 - cross_t + up);
 	glEnd();
-	//¥k
-	glBegin(GL_QUADS);
-	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
-	glVertex3f_Simplify(qt0 + forward + cross_t + up);
-	glVertex3f_Simplify(qt0 + forward + cross_t);
-	glVertex3f_Simplify(qt0 + cross_t);
-	glVertex3f_Simplify(qt0 + cross_t + up);
-	glEnd();
+	
 	if (!doingShadows) {
 		glColor3ub(0, 0, 0);
 	}
@@ -369,16 +372,16 @@ void DrawTrainHead(Pnt3f qt0, Pnt3f cross_t, Pnt3f up, Pnt3f forward, bool doing
 	glVertex3f_Simplify(qt0 - cross_t);
 	glEnd();
 	//¥ª
-	glBegin(GL_QUADS);
 	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 + forward - cross_t + up);
 	glVertex3f_Simplify(qt0 + forward - cross_t);
 	glVertex3f_Simplify(qt0 - cross_t);
 	glVertex3f_Simplify(qt0 - cross_t + up);
 	glEnd();
 	//¥k
-	glBegin(GL_QUADS);
 	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
+	glBegin(GL_QUADS);
 	glVertex3f_Simplify(qt0 + forward + cross_t + up);
 	glVertex3f_Simplify(qt0 + forward + cross_t);
 	glVertex3f_Simplify(qt0 + cross_t);
@@ -422,7 +425,7 @@ void DrawTrainHead(Pnt3f qt0, Pnt3f cross_t, Pnt3f up, Pnt3f forward, bool doing
 	glEnd();
 	//¥k
 	glBegin(GL_QUADS);
-	glNormal3f(-cross_t.x, -cross_t.y, -cross_t.z);
+	glNormal3f(cross_t.x, cross_t.y, cross_t.z);
 	glVertex3f_Simplify(qt0 + forward * length + cross_t + up * height);
 	glVertex3f_Simplify(qt0 + forward * length + cross_t);
 	glVertex3f_Simplify(qt0 + cross_t);
@@ -687,7 +690,7 @@ void TrainView::draw()
 		}
 
 		if (!this->texture)
-			this->texture = new Texture2D("../WaterSurface/Images/church.png");
+			this->texture = new Texture2D("../Project4-WaterSurface/WaterSurface-master/Images/church.png");
 
 		if (!this->device){
 			//Tutorial: https://ffainelli.github.io/openal-example/
@@ -802,8 +805,11 @@ void TrainView::draw()
 	GLfloat whiteLight[]			= {1.0f, 1.0f, 1.0f, 1.0};
 	GLfloat blueLight[]			= {.1f,.1f,.3f,1.0};
 	GLfloat grayLight[]			= {.3f, .3f, .3f, 1.0};
+	initDirLight();
+	initPosLight();
 
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
+
+	/*glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE, whiteLight);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, grayLight);
 
@@ -811,7 +817,7 @@ void TrainView::draw()
 	glLightfv(GL_LIGHT1, GL_DIFFUSE, yellowLight);
 
 	glLightfv(GL_LIGHT2, GL_POSITION, lightPosition3);
-	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);
+	glLightfv(GL_LIGHT2, GL_DIFFUSE, blueLight);*/
 
 	// set linstener position 
 	if(selectedCube >= 0)
