@@ -43,7 +43,13 @@ class Pnt3f {
 		// from an array 
 		Pnt3f(const float*);			
 		// copy constructor created by default
-		// Pnt3f(const Pnt3f&);		
+		// Pnt3f(const Pnt3f&);
+		Pnt3f& operator=(const Pnt3f& temp) {
+			this->x = temp.x;
+			this->y = temp.y;
+			this->z = temp.z;
+			return *this;
+		}
 
 	public:
 		// if you want to treat this thing as a C vector (point to float)
@@ -53,13 +59,13 @@ class Pnt3f {
 		Pnt3f operator * (const Pnt3f&) const;	/* cross product */
 		Pnt3f operator * (const float)	const;  /* scale by scalar */
 		Pnt3f operator + (const Pnt3f&) const;	/* create a temp */
-
+		Pnt3f operator - (const Pnt3f&) const;	/* create a temp */
 		// make sure that we're unit length - vertical in the error case (0 length)
 		void normalize();
 
 		// note - the operators above are for Pnt3f*scalar, here we have scalar*Pnt3f
 		friend Pnt3f operator * (const float s, const Pnt3f& p );
-
+		friend Pnt3f operator / (const Pnt3f& p,const float s);
 	public:
 		// for simplicity, we just make this public so everything can access
 		// it. real software engineers would make the internal data private.
@@ -115,7 +121,12 @@ operator + (const Pnt3f& p) const
 {
 	return Pnt3f(x+p.x, y+p.y, z+p.z);
 };
-
+inline Pnt3f Pnt3f::
+operator - (const Pnt3f& p) const
+//=============================================================================
+{
+	return Pnt3f(x - p.x, y - p.y, z - p.z);
+};
 //*****************************************************************************
 //
 // * cross product
@@ -129,4 +140,9 @@ operator*(const Pnt3f& p) const
 	q.y = p.x * z - p.z * x;
 	q.z = p.y * x - p.x * y;
 	return q;
+};
+inline Pnt3f operator / (const Pnt3f& p,const float s)
+//=============================================================================
+{
+	return Pnt3f(p.x/s, p.y / s, p.z / s);
 };
