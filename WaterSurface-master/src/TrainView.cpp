@@ -805,8 +805,8 @@ void TrainView::draw()
 	GLfloat whiteLight[]			= {1.0f, 1.0f, 1.0f, 1.0};
 	GLfloat blueLight[]			= {.1f,.1f,.3f,1.0};
 	GLfloat grayLight[]			= {.3f, .3f, .3f, 1.0};
-	initDirLight();
-	initPosLight();
+	//initDirLight();
+	//initPosLight();
 
 
 	/*glLightfv(GL_LIGHT0, GL_POSITION, lightPosition1);
@@ -872,8 +872,55 @@ void TrainView::draw()
 	glUniformMatrix4fv(glGetUniformLocation(this->shader->Program, "u_model"), 1, GL_FALSE, &model_matrix[0][0]);
 	glUniform3fv(glGetUniformLocation(this->shader->Program, "u_color"), 1, &glm::vec3(0.0f, 1.0f, 0.0f)[0]);
 	this->texture->bind(0);
+
 	glUniform1i(glGetUniformLocation(this->shader->Program, "u_texture"), 0);
 	
+	Pnt3f qt0(0, 0, 0);
+	Pnt3f up(0, 1, 0);
+	Pnt3f cross_t(1,0, 0);
+	Pnt3f forward(0, 0, 1);
+	
+	//glColor3ub(255, 255, 255);
+	/*glBegin(GL_QUADS);
+	glVertex3f(0, 0, 0);
+	glVertex3f(0, 1, 0);
+	glVertex3f(0, 1, -1);
+	glVertex3f(0, 0, -1);
+	glEnd();*/
+	
+
+	//Direction light
+	glUniform3f(glGetUniformLocation(this->shader->Program, "viewPos"), 0.0f, 0.0f, 0.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "dirLight.direction"), 0.0f, 1.5f, 0.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "dirLight.ambient"), 1.0f, 1.0f, 0.00f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "dirLight.diffuse"), 0.4f, 0.4f, 0.4f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "dirLight.specular"), 0.5f, 0.5f, 0.5f);
+	//Point light
+	glUniform3f(glGetUniformLocation(this->shader->Program, "pointLights.direction"), 1.0f, 0.5f, 0.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "pointLights.ambient"), 1.0f, 0.0f, 0.00f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "pointLights.diffuse"), 0.8f, 0.8f, 0.8f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "pointLights.specular"), 1.0f, 1.0f, 1.0f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "pointLights.constant"), 1.0f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "pointLights.linear"), 0.09f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "pointLights.quadratic"), 0.032f);
+	//spot light
+	
+	glUniform3f(glGetUniformLocation(this->shader->Program, "spotLight.position"), 0.0f, 5.0f, 0.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "spotLight.direction"), 0.0f, -1.0f, 0.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "spotLight.ambient"), 1.0f, 0.0f, 0.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "spotLight.diffuse"), 1.0f, 1.0f, 1.0f);
+	glUniform3f(glGetUniformLocation(this->shader->Program, "spotLight.specular"), 1.0f, 1.0f, 1.0f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "spotLight.constant"), 1.0f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "spotLight.linear"), 0.09f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "spotLight.quadratic"), 0.032f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "spotLight.cutOff"), 0.09f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "spotLight.quadratic"), glm::cos(glm::radians(12.5f)));
+	glUniform1f(glGetUniformLocation(this->shader->Program, "spotLight.outerCutOff"), glm::cos(glm::radians(12.5f)));
+
+
+	glUniform1f(glGetUniformLocation(this->shader->Program, "material.diffuse"), 0.0f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "material.specular"), 1.0f);
+	glUniform1f(glGetUniformLocation(this->shader->Program, "material.shininess"), 32.0f);
 	//bind VAO
 	glBindVertexArray(this->plane->vao);
 
