@@ -975,12 +975,39 @@ setProjection()
 	// put code for train view projection here!	
 	//####################################################################
 	else {
-#ifdef EXAMPLE_SOLUTION
-		trainCamView(this,aspect);
-#endif
+		trainCamView(this, aspect);
 	}
 }
+void TrainView::trainCamView(TrainView* TrainV, float aspect) {
+	float percent = 1.0f / DIVIDE_LINE;
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(120, aspect, 0.01, 1000);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	float t;
+	int i;
+	if (TrainV->tw->arcLength->value()) {
+		t = t_t;
+		i = t_i;
+	}
+	else {
+		i = floor(t_time);
+		t = t_time - i;
+	}
+	ControlPoint p1 = m_pTrack->points[(i - 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+	ControlPoint p2 = m_pTrack->points[(i + m_pTrack->points.size()) % m_pTrack->points.size()];
+	ControlPoint p3 = m_pTrack->points[(i + 1 + m_pTrack->points.size()) % m_pTrack->points.size()];
+	ControlPoint p4 = m_pTrack->points[(i + 2 + m_pTrack->points.size()) % m_pTrack->points.size()];
 
+	Pnt3f eye_orient = GMT(p1.orient, p2.orient, p3.orient, p4.orient, tw->splineBrowser->value(), t - percent);
+	Pnt3f centery_ori = GMT(p1.orient, p2.orient, p3.orient, p4.orient, tw->splineBrowser->value(), t);
+
+	Pnt3f eye = GMT(p1.pos, p2.pos, p3.pos, p4.pos, tw->splineBrowser->value(), t - percent) + eye_orient * 2.0f;
+	Pnt3f centery = GMT(p1.pos, p2.pos, p3.pos, p4.pos, tw->splineBrowser->value(), t) + centery_ori * 2.0f;
+	gluLookAt(eye.x, eye.y, eye.z, centery.x, centery.y, centery.z, eye_orient.x, eye_orient.y, eye_orient.z);
+}
+//****
 //************************************************************************
 //
 // * this draws all of the stuff in the world

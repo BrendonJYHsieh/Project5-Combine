@@ -27,9 +27,10 @@
 
 #include <FL/fl.h>
 #include <FL/Fl_Box.h>
-
+#include<iostream>
 // for using the real time clock
 #include <time.h>
+using namespace std;
 
 #include "TrainWindow.H"
 #include "TrainView.H"
