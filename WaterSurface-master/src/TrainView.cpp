@@ -947,7 +947,7 @@ setProjection()
 	float aspect = static_cast<float>(w()) / static_cast<float>(h());
 
 	// Check whether we use the world camp
-	if (tw->worldCam->value()) {
+	if (tw->worldCam->value()) 
 		arcball.setProjection(false);
 		//GLdouble temp[16];
 		//glGetDoublev(GL_MODELVIEW_MATRIX, temp);
@@ -966,7 +966,7 @@ setProjection()
 		////	cout << endl;
 		////}
 		//modelView = glm::inverse(modelView);
-	}
+	
 		
 
 	// Or we use the top cam
