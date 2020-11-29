@@ -32,14 +32,14 @@
 //#include "GL/gl.h"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
+#include<glm/matrix.hpp>
 #include <glm/gtx/transform.hpp>
 #include <GL/glu.h>
 
 #include "TrainView.H"
 #include "TrainWindow.H"
 #include "Utilities/3DUtils.H"
-
-
+using namespace std;
 
 //My function
 Pnt3f TrainView::GMT(Pnt3f p1, Pnt3f p2, Pnt3f p3, Pnt3f p4, float mode, float t) {
@@ -947,8 +947,28 @@ setProjection()
 	float aspect = static_cast<float>(w()) / static_cast<float>(h());
 
 	// Check whether we use the world camp
-	if (tw->worldCam->value())
+	if (tw->worldCam->value()) {
 		arcball.setProjection(false);
+		//GLdouble temp[16];
+		//glGetDoublev(GL_MODELVIEW_MATRIX, temp);
+		///*for (int i = 0; i < 16; i++) {
+		//	cout << temp[i] << " " << endl;
+		//}*/
+		//glm::mat4x4 modelView;
+		//for (int i = 0; i < 16; i++) {
+		//	modelView[i / 4][i % 4] = temp[i];
+		//}
+		//modelView = glm::transpose(modelView);
+		////for (int i = 0; i < 4; i++) {
+		////	for (int j = 0; j < 4; j++) {
+		////		cout << modelView[i][j] << endl;
+		////	}
+		////	cout << endl;
+		////}
+		//modelView = glm::inverse(modelView);
+	}
+		
+
 	// Or we use the top cam
 	else if (tw->topCam->value()) {
 		float wi, he;

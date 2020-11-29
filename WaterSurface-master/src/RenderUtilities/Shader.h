@@ -24,7 +24,7 @@ public:
 		FRAGMENT_SHADER = (1 << 4),
 	};
 	//DEFINE_ENUM_FLAG_OPERATORS(Type);
-
+	int ID;
 	Type type = NULL_SHADER;
 	// Constructor generates the shader on the fly
 	Shader(const GLchar* vert, const GLchar* tesc, const GLchar* tese, const char* geom, const char* frag)
@@ -58,6 +58,7 @@ public:
 		// Shader Program
 		GLint success;
 		GLchar infoLog[512];
+		
 		this->Program = glCreateProgram();
 
 		for (GLuint shader : shaders)
